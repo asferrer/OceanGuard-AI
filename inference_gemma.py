@@ -22,12 +22,16 @@ python tu_script.py
 """
 import torch
 from unsloth import FastLanguageModel, FastVisionModel
+from PIL import Image, ImageDraw, ImageFont
 from PIL import Image
 import requests
 from io import BytesIO
 from transformers import TextStreamer
+import json
+import os
 
-torch._dynamo.reset()
+torch._dynamo.disable()
+torch._dynamo.config.cache_size_limit = 99999999999999999999
 
 def setup_model():
     """
@@ -71,7 +75,77 @@ def load_image_from_path(path: str) -> Image.Image:
     except Exception as e:
         print(f"❌ Error al abrir la imagen local: {e}")
         return None
-    
+
+def visualize_bounding_boxes(image: Image.Image, detections: list) -> Image.Image:
+    """
+    Dibuja los bounding boxes y etiquetas sobre una imagen usando colores
+    diferentes para cada material.
+
+    Args:
+        image (Image.Image): La imagen original.
+        detections (list): Una lista de diccionarios, donde cada uno representa
+                           una detección con 'bounding_box' y 'debris_type'.
+
+    Returns:
+        Image.Image: La imagen con las visualizaciones dibujadas.
+    """
+    img_draw = image.copy()
+    draw = ImageDraw.Draw(img_draw)
+    width, height = img_draw.size
+
+    # Mapa de colores para visualizar diferentes tipos de materiales.
+    color_map = {
+        "plastic": "#FF1493",  # DeepPink
+        "metal": "#1E90FF",   # DodgerBlue
+        "fabric": "#32CD32",  # LimeGreen
+        "textile": "#32CD32", # LimeGreen
+        "rubber": "#FFD700",  # Gold
+        "glass": "#00CED1",   # DarkTurquoise
+        "nylon": "#9400D3",   # DarkViolet
+        "synthetic": "#9400D3",# DarkViolet
+        "fishing": "#FF8C00", # DarkOrange
+        "default": "#FFFFFF"  # White for unknown
+    }
+
+    try:
+        font = ImageFont.truetype("arial.ttf", 20)
+    except IOError:
+        font = ImageFont.load_default()
+
+    for det in detections:
+        box = det.get('bounding_box')
+        label = det.get('debris_type', 'Unknown')
+        material = det.get('material', 'default').lower()
+
+        if not box or len(box) != 4:
+            continue
+            
+        # Encontrar el color correspondiente al material.
+        # Si no se encuentra una coincidencia directa, usa el color por defecto.
+        color_key = "default"
+        for key in color_map:
+            if key in material:
+                color_key = key
+                break
+        color = color_map.get(color_key, color_map["default"])
+
+        # Desnormalizar las coordenadas del bounding box
+        xmin, ymin, xmax, ymax = box
+        abs_xmin = xmin * width
+        abs_ymin = ymin * height
+        abs_xmax = xmax * width
+        abs_ymax = ymax * height
+
+        # Dibujar el rectángulo
+        draw.rectangle([(abs_xmin, abs_ymin), (abs_xmax, abs_ymax)], outline=color, width=4)
+
+        # Dibujar la etiqueta de texto con un fondo
+        text_bbox = draw.textbbox((abs_xmin, abs_ymin - 22), label, font=font)
+        draw.rectangle(text_bbox, fill=color)
+        draw.text((abs_xmin, abs_ymin - 22), label, fill="black", font=font)
+        
+    return img_draw
+
 def detect_marine_waste(model, tokenizer, image_url: str):
     """
     Realiza la inferencia sobre una imagen para detectar residuos marinos.
@@ -98,9 +172,14 @@ def detect_marine_waste(model, tokenizer, image_url: str):
     # El prompt está diseñado para guiar al modelo a enfocarse en los objetos de desecho.
     # Es más efectivo que preguntar genéricamente "¿Qué ves?".
     prompt_text = (
-        "You are an expert in marine biology and environmental science. "
-        "Analyze this image of the seabed and identify any man-made waste or debris. "
-        "Describe the types of materials you see (e.g., plastic, metal, rubber) and the specific objects if possible."
+        "You are a precise, expert marine debris detection system. "
+        "Your task is to analyze the image and identify ALL man-made waste items. "
+        "For each item, provide a TIGHT bounding box that fits snugly around the object, excluding as much background (water, sand, rocks) as possible. "
+        "Return a JSON list of objects. Each object must have:\n"
+        "1. 'debris_type': The specific type of object (e.g., 'Plastic Bottle', 'Fishing Net').\n"
+        "2. 'material': The likely material (e.g., 'Plastic', 'Metal', 'Nylon').\n"
+        "3. 'bounding_box': A list of four normalized coordinates [x_min, y_min, x_max, y_max] representing the top-left and bottom-right corners of the tight bounding box.\n"
+        "Your response MUST be ONLY the JSON list, without any other text, explanations, or markdown formatting."
     )
     prompt = [
         { "type": "image", "image" : image},
@@ -110,7 +189,6 @@ def detect_marine_waste(model, tokenizer, image_url: str):
     messages = [{"role": "user", "content": prompt}]
 
     # Generar la respuesta usando la función de chat del modelo
-    
     try:
         inputs = tokenizer.apply_chat_template(
         messages,
@@ -121,7 +199,8 @@ def detect_marine_waste(model, tokenizer, image_url: str):
         ).to("cuda")
         output_tokens = model.generate(
             **inputs,
-            temperature = 1.0, top_p = 0.95, top_k = 64,
+            temperature = 0.1, top_p = 0.95, top_k = 64,
+            max_new_tokens = 1024
         )
 
         response_text = tokenizer.batch_decode(output_tokens[:, inputs.input_ids.shape[1]:], skip_special_tokens=True)[0]
@@ -130,7 +209,29 @@ def detect_marine_waste(model, tokenizer, image_url: str):
         print(prompt_text)
         
         print("\n🤖 Respuesta del Modelo:")
-        print(response_text.strip())
+        print(response_text)
+
+        # Procesar y visualizar la respuesta
+        try:
+            # Limpiar la respuesta para que sea un JSON válido
+            json_str = response_text.strip().replace("```json", "").replace("```", "")
+            detections = json.loads(json_str)
+            
+            print(f"\n✅ Se encontraron {len(detections)} objetos.")
+
+            # Dibujar los bounding boxes
+            annotated_image = visualize_bounding_boxes(image, detections)
+            
+            # Guardar la imagen anotada
+            base, ext = os.path.splitext(image_url)
+            output_path = f"{base}_analyzed.jpg"
+            annotated_image.save(output_path)
+            print(f"💾 Imagen con anotaciones guardada en: {output_path}")
+
+        except json.JSONDecodeError:
+            print("❌ Error: La respuesta del modelo no es un JSON válido.")
+        except Exception as e:
+            print(f"❌ Error al procesar las detecciones: {e}")
 
     except Exception as e:
         print(f"Ha ocurrido un error durante la inferencia: {e}")
@@ -152,36 +253,18 @@ if __name__ == "__main__":
 
     # Lista de imágenes de ejemplo para analizar
     example_images = [
-        "mis_imagenes_submarinas/2K0126IN0025Hp03-05.jpg",
-        "mis_imagenes_submarinas/HPD1814HDTV0820.jpg",
-        "mis_imagenes_submarinas/HPD2027HDTV12026.jpg",
-        "mis_imagenes_submarinas/HPD2027HDTV11708.jpg"
+        "../mis_imagenes_submarinas/HPD2032OUT0050.jpg",
+        "../mis_imagenes_submarinas/HPD1938HDTV20368.jpg",
+        #"../mis_imagenes_submarinas/2K0126IN0025Hp03-05.jpg",
+        #"../mis_imagenes_submarinas/HPD1814HDTV0820.jpg",
+        #"../mis_imagenes_submarinas/HPD2027HDTV12026.jpg",
+        #"../mis_imagenes_submarinas/HPD2027HDTV11708.jpg"
     ]
 
     # Iterar sobre las imágenes y realizar la detección
-    for url in example_images:
-        detect_marine_waste(gemma_model, gemma_tokenizer, url)
+    for path in example_images:
+        if os.path.exists(path):
+            detect_marine_waste(gemma_model, gemma_tokenizer, path)
+        else:
+            print(f"⚠️  Advertencia: El archivo no existe, saltando: {path}")
 
-    # Ejemplo con una imagen local (descomentar para usar)
-    # print("\n--- Analizando imagen local ---")
-    # try:
-    #     local_image_path = "ruta/a/tu/imagen.jpg"
-    #     local_image = Image.open(local_image_path)
-    #
-    #     # Reutilizamos la lógica de la función `detect_marine_waste`
-    #     prompt = (
-    #         "You are an expert in marine biology. Describe any man-made waste in this image of the seabed."
-    #     )
-    #     messages = [{"role": "user", "content": prompt}]
-    #     images = [local_image]
-    #
-    #     response = gemma_model.chat(gemma_tokenizer, messages=messages, images=images)
-    #     print("\n❓ Pregunta:")
-    #     print(prompt)
-    #     print("\n🤖 Respuesta del Modelo:")
-    #     print(response)
-    #
-    # except FileNotFoundError:
-    #     print(f"Asegúrate de que la imagen exista en la ruta: {local_image_path}")
-    # except Exception as e:
-    #     print(f"Error al procesar la imagen local: {e}")
