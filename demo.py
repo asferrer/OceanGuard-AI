@@ -148,10 +148,10 @@ def visualize_bounding_boxes(image, detections):
 def display_detailed_report(report_data):
     st.header(f"Informe Detallado: {report_data['name']}")
     col1, col2 = st.columns(2)
-    with col1: st.image(report_data['image'], caption="Imagen Original", use_column_width=True)
+    with col1: st.image(report_data['image'], caption="Imagen Original", use_container_width=True)
     with col2:
         annotated_image = visualize_bounding_boxes(report_data['image'].copy(), report_data['detections'])
-        st.image(annotated_image, caption="Imagen con Detecciones", use_column_width=True)
+        st.image(annotated_image, caption="Imagen con Detecciones", use_container_width=True)
     st.subheader("Panel de Impacto Ambiental")
     if not report_data['detections']: st.success("✅ No se detectaron residuos con el filtro de confianza actual.")
     else:
