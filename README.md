@@ -7,6 +7,18 @@
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License">
 </p>
 
+<p align="center">
+<a href="https://youtu.be/4YRmgjpFcSI">
+<img src="https://img.shields.io/badge/YouTube-red?style=for-the-badge&logo=youtube&logoColor=white" alt="Video Demo">
+</a>
+<a href="">
+<img src="https://img.shields.io/badge/Kaggle-20BEFF?style=for-the-badge&logo=Kaggle&logoColor=white" alt="Kaggle Write-up">
+</a>
+
+<p align="center">
+<em>A submission to the Google - Gemma 3N Hackathon on Kaggle.</em>
+</p>
+
 ---
 
 ### 🆘 The Crisis: A Plastic Ocean
@@ -19,14 +31,18 @@ By 2050, our oceans could contain more plastic than fish by weight. Traditional 
 
 ---
 
-## 🚀 Revolutionary Features
+## ✨ Key Features & Technical Highlights
 
--   **🧠 JSON Intelligence & Robust Parsing**: We force Gemma to think in structured data with a JSON-first prompt. A custom robust parser corrects common model errors, ensuring 100% reliable data ingestion for automated systems.
--   **🛰️ Smart Geolocation & Data Enrichment**: Every image is automatically tagged with geospatial data. The system extracts GPS coordinates from EXIF metadata or assigns a location from a global catalog of dive sites, ensuring every data point has a geographical context.
--   **📊 Advanced Ecosystem Health Score**: A unique algorithm calculates a real-time ocean health score based on debris type, threat level, and pollution density, providing an instant metric for environmental impact.
--   **🌍 Multilingual Generative Reports**: Gemma acts as an expert analyst, synthesizing quantitative data into multilingual conservation reports (EN, ES, JA, etc.) complete with actionable recommendations for policymakers and cleanup crews.
--   **🎨 Dynamic & Interactive Visualization**: The platform features an interactive 3D geospatial map, visual bounding box overlays, and detailed environmental impact dashboards for each detected item.
--   **⚡ Optimized Real-Time Performance**: With Unsloth's 4-bit quantization, we achieve high-speed image analysis on a single GPU, making real-time response a reality.
+- **🧠 On-Device Intelligence & Offline-First**: All analysis happens locally. No internet connection or expensive cloud servers required. This is a game-changer for fieldwork in remote marine protected areas.
+
+- **🎯 High-Precision Debris Detection**: Gemma 3N identifies and classifies underwater debris, outputting structured JSON data with coordinates and confidence scores for 100% reliable data ingestion.
+- **🔧 Robust JSON Parsing**: We've implemented a custom robust_json_parser that intelligently corrects common syntax errors from the LLM (like missing commas), ensuring the application never fails due to malformed model outputs.
+- **🗺️ Interactive Geospatial Dashboard**: An intuitive 3D map visualizes pollution data instantly, revealing environmental hotspots and allowing for powerful data exploration.
+- **🩺 Revolutionary Health Score**: A unique algorithm (calculate_ecosystem_health) calculates a real-time "Ecosystem Health Score" for any location, providing an immediate, quantifiable metric of environmental impact based on debris type and density.
+- **📜 AI-Powered Narrative Reports**: Gemma acts as an expert marine biologist, synthesizing findings into multilingual executive reports complete with actionable mitigation strategies.
+- **⚡ Optimized for Performance**: Using Unsloth's 4-bit quantization, we achieve high-speed analysis on consumer-grade hardware, making real-time application a reality.
+
+- **📊 Built-in Performance Evaluation**: The repository includes a dedicated script (evaluate_performance.py) to benchmark the model's accuracy (Precision, Recall, F1-Score) against standard datasets like CleanSea (in COCO format), demonstrating a commitment to scientific validation.
 
 ---
 
@@ -35,7 +51,7 @@ By 2050, our oceans could contain more plastic than fish by weight. Traditional 
 -   **Core Model**: Google Gemma 3n (`unsloth/gemma-3n-e4b-it` & `unsloth/gemma-3n-e2b-it`)
 -   **Optimization**: Unsloth AI for 2x faster fine-tuning and memory efficiency.
 -   **Interactive Demo**: Streamlit
--   **Geospatial Mapping**: Pydeck
+-   **Geospatial Mapping**: Pydeck, Piexif
 -   **Data Analysis & Visualization**: Pandas, Matplotlib, Seaborn
 -   **Core Libraries**: PyTorch, Transformers, Pillow
 
@@ -76,7 +92,7 @@ The demo provides a hands-on experience with the OceanGuard AI platform.
 
 -   **Installation**:
     ```bash
-    pip install -r requirements.txt # (Assuming you create a requirements file)
+    pip install -r requirements.txt
     ```
 -   **Running the App**:
     ```bash
@@ -116,16 +132,15 @@ This script benchmarks the model's accuracy against a labeled dataset (e.g., Cle
 
 ---
 
-## 🔮 Impact & Future Roadmap
+## 🔮 Impact & Vision
 
-OceanGuard AI is not just a concept; it's a scalable solution ready for global deployment.
+OceanGuard AI is a deployable solution with the potential to revolutionize marine conservation. Our AI pipeline is up to 10,000x faster than manual surveys, drastically reducing costs and empowering rapid, data-driven action.
 
--   **📈 Immediate Impact**: Our AI pipeline is up to **10,000x faster** than manual surveys, drastically reducing costs and enabling rapid, data-driven conservation efforts.
--   **🤖 Future Vision**:
-    -   **Edge AI Deployment**: Port the model to **NVIDIA Jetson Orin Nano** for real-time analysis on autonomous underwater drones.
-    -   **Specialized Fine-Tuning**: Continuously improve accuracy by fine-tuning on datasets like **CleanSea** to create expert models for specific regions.
-    -   **Predictive Analysis**: Integrate with oceanographic models to predict future debris hotspots.
-    -   **Global API**: Offer a scalable API for institutions and NGOs to integrate our capabilities into their platforms.
+**Our Roadmap Includes:**
+- **🤖Edge AI Deployment**: Port the model to **NVIDIA Jetson Orin Nano** for real-time analysis on autonomous underwater drones.
+- **🎯Specialized Fine-Tuning**: Continuously improve accuracy by fine-tuning on datasets like **CleanSea** to create expert models for specific regions.
+- **🌊Predictive Analysis**: Integrate with oceanographic models to predict future debris hotspots.
+- **🌐Global API**: Offer a scalable API for institutions and NGOs to integrate our capabilities into their platforms.
 
 ---
 
