@@ -1,73 +1,85 @@
-# 🛰️ OceanGuard AI: Plataforma de Mapeo Científico
+# 🛰️ OceanGuard AI: Pollution Mapping Platform
 
-**OceanGuard AI** es una aplicación web desarrollada con Streamlit que utiliza el poder del modelo de lenguaje multimodal **Google Gemma 3n** para detectar, clasificar y mapear residuos en el fondo marino a partir de imágenes submarinas.
+<p align="center">
+<img src="https://img.shields.io/badge/Framework-Streamlit-red?style=for-the-badge&logo=streamlit" alt="Framework">
+<img src="https://img.shields.io/badge/Model-Gemma%203n-blue?style=for-the-badge&logo=google-gemini" alt="Model">
+<img src="https://img.shields.io/badge/Optimized%20by-Unsloth-green?style=for-the-badge" alt="Unsloth">
+</p>
 
-Esta herramienta está diseñada para biólogos marinos, ONGs ambientales y buceadores científicos, permitiéndoles transformar sus fotografías submarinas en datos accionables para la conservación de los océanos.
+**OceanGuard AI** is an interactive web application built with Streamlit that harnesses the power of the Google Gemma 3n multimodal model to detect, classify, and map marine debris from underwater imagery.
 
-![Imagen de la app OceanGuard AI en Español]
+This tool is designed for marine biologists, environmental NGOs, and scientific divers, enabling them to transform their underwater photographs into actionable data for ocean conservation.
 
-## ✨ Características Principales
+## ✨ Key Features
 
--   **Detección de Residuos por IA**: Identifica objetos como plásticos, metales, redes de pesca y otros residuos en las imágenes.
--   **Clasificación y Bounding Box**: No solo detecta, sino que clasifica el tipo de residuo y su material, y dibuja un cuadro delimitador (bounding box) para una localización precisa.
--   **Análisis Geoespacial**: Extrae automáticamente las coordenadas GPS de los metadatos EXIF de las imágenes y las muestra en un mapa interactivo, coloreando las zonas según su nivel de contaminación.
--   **Dashboard Interactivo**: Visualiza estadísticas agregadas, como los tipos de residuos más comunes y la puntuación de salud del ecosistema.
--   **Generación de Informes por IA**: Utiliza Gemma para redactar resúmenes ejecutivos del impacto ambiental y proponer medidas de mitigación.
--   **Exportación de Datos**: Descarga todos los hallazgos en un archivo CSV para análisis posteriores.
+- **AI-Powered Debris Detection**: Identifies objects such as plastics, metals, fishing nets, and other waste items in images.
+- **Classification & Bounding Box**: Not only detects but also classifies the debris type and its material, drawing a precise bounding box for accurate localization.
+- **Geospatial Analysis**: Automatically extracts GPS coordinates from image EXIF metadata and displays them on an interactive 3D map, color-coding locations based on their calculated ecosystem health score.
+- **Interactive Dashboard**: Visualizes aggregated statistics, including the most common debris types and overall ecosystem health metrics.
+- **AI-Generated Reports**: Leverages Gemma to generate executive summaries on the environmental impact, complete with actionable mitigation recommendations.
+- **Data Export**: Allows users to download all findings into a CSV file for further analysis.
 
-## 🛠️ Stack Tecnológico
+## 🛠️ Technology Stack
 
--   **Framework de la App**: [Streamlit](https://streamlit.io/)
--   **Modelo Multimodal**: [Google Gemma 3n](https://ai.google.dev/gemma) (a través de la librería Unsloth para optimización)
--   **Procesamiento de Datos**: Pandas
--   **Procesamiento de Imágenes**: Pillow, Piexif
--   **Visualización Geoespacial**: Pydeck
+-   **Demo App Framework:**: [Streamlit](https://streamlit.io/)
+-   **Multimodal Model:**: [Google Gemma 3n](https://ai.google.dev/gemma) (optimized via the Unsloth library)
+-   **Data Processing:**: Pandas
+-   **Image Processing:**: Pillow, Piexif
+-   **Geospatial Visualization**: Pydeck
 
-## 🚀 Instalación y Uso
+## 🚀 Getting Started
 
-### Prerrequisitos
-
--   Python 3.9+
--   Una GPU NVIDIA con soporte para CUDA (recomendado para un rendimiento óptimo).
--   Credenciales de Hugging Face para descargar el modelo.
+### Prerequisites
+- Python 3.9+ (Python 3.10 is recommended)
+- Anaconda or Miniconda installed.
+- An NVIDIA GPU with CUDA support (recommended for optimal performance).
+- Hugging Face credentials configured for model downloading.
 
 ### Pasos de Instalación
 
-1.  **Clonar el repositorio:**
+1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/tu-usuario/OceanGuard-AI.git](https://github.com/tu-usuario/OceanGuard-AI.git)
+    git clone [https://github.com/asferrer/OceanGuard-AI.git](https://github.com/asferrer/OceanGuard-AI.git)
     cd OceanGuard-AI
     ```
 
-2.  **Crear un entorno virtual:**
+2.  **Create and activate a Conda environment**
+    It's recommended to specify a Python version compatible with the dependencies, like 3.10.
     ```bash
-    python -m venv venv
-    source venv/bin/activate  # En Windows: venv\Scripts\activate
+    conda create -n oceanguard python=3.10
+    conda activate oceanguard
     ```
 
 3.  **Instalar las dependencias:**
-    El archivo `requirements.txt` contiene todas las librerías necesarias. Para instalar `unsloth`, que requiere compilaciones específicas de PyTorch y xformers, se recomienda seguir sus instrucciones oficiales o usar el siguiente comando que suele funcionar en la mayoría de los casos:
+    The  `requirements.txt` ile lists all necessary libraries. To instal `unsloth`, which requires specific PyTorch and xformers builds, it's best to follow their official instructions or use the command below, which works for most setups:
 
     ```bash
     pip install "unsloth[cu121-py310] @ git+[https://github.com/unsloth/unsloth.git](https://github.com/unsloth/unsloth.git)"
     pip install -r requirements.txt
     ```
 
-4.  **Ejecutar la aplicación:**
-    Navega a la carpeta raíz del proyecto y ejecuta:
+4.  **Run the application:**
+    From the root directory of the project, execute the following command:
     ```bash
     streamlit run app/app.py
     ```
 
-La aplicación se abrirá en tu navegador web.
+The application will launch in your default web browser.
 
-## 💡 Cómo Usar la App
+## 💡 How to Use the App
 
-1.  **Sube tus imágenes**: Usa el panel lateral para cargar una o más imágenes (`.jpg`, `.png`) de tu exploración submarina.
-2.  **Analiza las Imágenes**: Haz clic en el botón "Analizar Imágenes del Proyecto". La aplicación procesará cada imagen con Gemma. Esto puede tardar un poco, especialmente la primera vez.
-3.  **Explora el Dashboard**:
-    -   Usa el **mapa** para ver la distribución geográfica de los residuos.
-    -   Consulta las **estadísticas** para entender los tipos y cantidades de residuos.
-    -   Selecciona imágenes individuales para ver el **informe detallado** con las detecciones.
-4.  **Genera un Reporte**: En el panel lateral, haz clic en "Generar Resumen Ejecutivo" para que Gemma cree un informe de impacto.
-5.  **Descarga tus Datos**: Usa el botón "Descargar Informe (CSV)" para guardar tus resultados.
+1. **Upload Your Images**: Use the sidebar to upload one or more underwater images `(.jpg, .png, .jpeg)`.
+
+2. **Analyze Project Image**s: Click the "Analyze Project Images" button in the sidebar. The app will process each image with Gemma. This may take some time, especially on the first run as the model loads.
+
+3. **Explore the Dashboard**:
+
+- Use the **Geospatial Map** to view the geographical distribution of debris.
+
+- Check the **statistics** to understand the types and quantities of detected debris.
+
+- Navigate to the **Individual Reports** tab to see detailed analyses with bounding boxes for each image.
+
+4. **Generate AI Reports:** In the sidebar, select a language and click "Generate Reports by Location" to have Gemma create environmental impact summaries.
+
+5. **Download Your Data**: Use the "Download Report (CSV)" button to save your findings.
